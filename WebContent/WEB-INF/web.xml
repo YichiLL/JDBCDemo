@@ -29,4 +29,34 @@
     <servlet-name>SampleServlet</servlet-name>
     <url-pattern>/SampleServlet</url-pattern>
   </servlet-mapping>
+  <servlet>
+    <description></description>
+    <display-name>Artist</display-name>
+    <servlet-name>Artist</servlet-name>
+    <servlet-class>Artist</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>Artist</servlet-name>
+    <url-pattern>/Artist</url-pattern>
+  </servlet-mapping>
+  <servlet>
+    <description></description>
+    <display-name>HTMLParser</display-name>
+    <servlet-name>HTMLParser</servlet-name>
+    <servlet-class>HTMLParser</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>HTMLParser</servlet-name>
+    <url-pattern>/HTMLParser</url-pattern>
+  </servlet-mapping>
+  <servlet>
+    <description></description>
+    <display-name>DBUtil</display-name>
+    <servlet-name>DBUtil</servlet-name>
+    <servlet-class>DBUtil</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>DBUtil</servlet-name>
+    <url-pattern>/DBUtil</url-pattern>
+  </servlet-mapping>
 </web-app>
