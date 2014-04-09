@@ -44,7 +44,6 @@ public class OracleServlet extends HttpServlet {
 			}
 			Statement stmt = conn.createStatement();
 			ResultSet rset = stmt.executeQuery("select * from users");
-
 			response.setContentType("text/html");
 			pw.println("<html>");
 			pw.println("<head><title>Employee Table Servlet Sample</title></head>");

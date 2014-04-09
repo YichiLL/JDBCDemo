@@ -59,4 +59,54 @@
     <servlet-name>DBUtil</servlet-name>
     <url-pattern>/DBUtil</url-pattern>
   </servlet-mapping>
+  <servlet>
+    <description></description>
+    <display-name>Product</display-name>
+    <servlet-name>Product</servlet-name>
+    <servlet-class>product.Product</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>Product</servlet-name>
+    <url-pattern>/Product</url-pattern>
+  </servlet-mapping>
+  <servlet>
+    <description></description>
+    <display-name>DB_Conn</display-name>
+    <servlet-name>DB_Conn</servlet-name>
+    <servlet-class>idb.DB_Conn</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>DB_Conn</servlet-name>
+    <url-pattern>/DB_Conn</url-pattern>
+  </servlet-mapping>
+  <servlet>
+    <description></description>
+    <display-name>ReadParams</display-name>
+    <servlet-name>ReadParams</servlet-name>
+    <servlet-class>demo.ReadParams</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>ReadParams</servlet-name>
+    <url-pattern>/ReadParams</url-pattern>
+  </servlet-mapping>
+  <servlet>
+    <description></description>
+    <display-name>HelloForm</display-name>
+    <servlet-name>HelloForm</servlet-name>
+    <servlet-class>demo.HelloForm</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>HelloForm</servlet-name>
+    <url-pattern>/HelloForm</url-pattern>
+  </servlet-mapping>
+  <servlet>
+    <description></description>
+    <display-name>StartPage</display-name>
+    <servlet-name>StartPage</servlet-name>
+    <servlet-class>idb.StartPage</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>StartPage</servlet-name>
+    <url-pattern>/StartPage</url-pattern>
+  </servlet-mapping>
 </web-app>
