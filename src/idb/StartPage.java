@@ -6,6 +6,8 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
@@ -34,28 +36,72 @@ public class StartPage extends HttpServlet {
 		try {
 			DB_Conn c = new DB_Conn();
 			this.conn = c.getConnection();
-			HtmlTemplate tpl = new HtmlTemplate("OnlineStore - Start Page");
+			HtmlTemplate tpl = new HtmlTemplate("OnlineStore - Start Page",
+					"Welcome!");
 			Statement stmt = conn.createStatement();
 			response.setContentType("text/html");
+			out.println(tpl.getHead());
+			out.println(tpl.getHeadline());
 			// template
 
-			// ResultSet rset = stmt.executeQuery("select * from users");
-			out.println(tpl.getHead());
-			out.println("<h2>Welcome!</h2>");
+			ResultSet rset = stmt.executeQuery("select * from avail_com");
+			Map<String, String> coms = new HashMap<String, String>();
+			while (rset.next()) {
+				coms.put(rset.getString("barcode"), rset.getString("name"));
+			}
+			out.println("<h3>Customer: Choose a product to continue!</h3>");
+			out.println(" <form method = \"get\" action = \"http://localhost:9080/JDBCDemo/ReadParams\"> ");
+
+			out.println(" <select name=\"target_com\"> ");
+			for (Map.Entry<String, String> entry : coms.entrySet()) {
+				out.println("  <option value=\" " + entry.getKey() + " \"> "
+						+ entry.getValue() + " </option> ");
+			}
+			out.println("</select>");
+			out.println("<p>"
+					+ "View Product Detail : "
+					+ "<INPUT TYPE=\"submit\" name=\"view_product\" VALUE=\"Go\">"
+					+ "</p>");
+
+			out.println("</br><h3>Manager:</h3>"
+					+ "<p>Choose from above and</p><p>"
+					+ "<INPUT TYPE=\"submit\" name=\"purchase\" VALUE=\"Purchase from Providers\">"
+					+ "</p>" + "<h4>or<h4>");
+
+			rset = stmt.executeQuery("select userid, uname from users");
+			Map<String, String> users = new HashMap<String, String>();
+			while (rset.next()) {
+				users.put(rset.getString("userid"), rset.getString("uname"));
+			}
+			out.println(" <select name=\"target_user\"> ");
+			for (Map.Entry<String, String> entry : users.entrySet()) {
+				out.println("  <option value=\" " + entry.getKey() + " \"> "
+						+ entry.getValue() + " </option> ");
+			}
+			out.println("</select></td><td>");
+			out.println("<INPUT TYPE=\"submit\" name=\"view_user\" VALUE=\"View user information\">");
+
+			out.println("</td></tr></table>");
+			out.println("</form>");
+
+			// template
 			Cookie[] cookies = null;
 			cookies = request.getCookies();
-			if( cookies != null ){
-		         out.println("<h2> Found Cookies Name and Value</h2>");
-		         for (int i = 0; i < cookies.length; i++){
-		            Cookie cookie = cookies[i];
-		            out.print("Name : " + cookie.getName( ) + ",  ");
-		            out.print("Value: " + cookie.getValue( )+" <br/>");
-		         }
-		      }else{
-		          out.println(
-		            "<h2>No cookies founds</h2>");
-		      }
+			String uname = "", userid = "";
+			if (cookies != null) {
+				for (int i = 0; i < cookies.length; i++) {
+					Cookie cookie = cookies[i];
+					if (cookie.getName().equals("uname"))
+						uname = cookie.getValue();
+					if (cookie.getName().equals("userid"))
+						userid = cookie.getValue();
+				}
+			}
+//			out.println("<br/>"+uname+" / " +userid);
+			// template
 
+			
+			
 			// template
 			out.println("</center></body></html>");
 		} catch (SQLException e) {
@@ -83,17 +129,18 @@ public class StartPage extends HttpServlet {
 		try {
 			DB_Conn c = new DB_Conn();
 			this.conn = c.getConnection();
-			HtmlTemplate tpl = new HtmlTemplate("OnlineStore - Start Page");
+			HtmlTemplate tpl = new HtmlTemplate("OnlineStore - Start Page",
+					"Welcome!");
 			Statement stmt = conn.createStatement();
 			response.setContentType("text/html");
+			out.println(tpl.getHead());
+			out.println(tpl.getHeadline());
 			// template
 
 			String uname = request.getParameter("uname");
 			ResultSet rset = stmt
 					.executeQuery("select count(*) as user_exist from users where uname='"
 							+ uname + "'");
-			out.println(tpl.getHead());
-			out.println("<h2>Welcome!</h2>");
 
 			if (rset.next()) {
 				int user_exist = Integer.parseInt(rset.getString("user_exist"));
