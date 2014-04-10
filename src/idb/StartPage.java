@@ -50,7 +50,8 @@ public class StartPage extends HttpServlet {
 				coms.put(rset.getString("barcode"), rset.getString("name"));
 			}
 			out.println("<h3>Customer: Choose a product to continue!</h3>");
-			out.println(" <form method = \"get\" action = \"http://localhost:9080/JDBCDemo/ReadParams\"> ");
+//			out.println(" <form method = \"get\" action = \"http://localhost:9080/JDBCDemo/ReadParams\"> ");
+			out.println(" <form method = \"get\" action = \"http://localhost:9080/JDBCDemo/ProductView\"> ");
 
 			out.println(" <select name=\"target_com\"> ");
 			for (Map.Entry<String, String> entry : coms.entrySet()) {
@@ -65,7 +66,7 @@ public class StartPage extends HttpServlet {
 
 			out.println("</br><h3>Manager:</h3>"
 					+ "<p>Choose from above and</p><p>"
-					+ "<INPUT TYPE=\"submit\" name=\"purchase\" VALUE=\"Purchase from Providers\">"
+					+ "<INPUT TYPE=\"submit\" name=\"purchase_product\" VALUE=\"Purchase from Providers\">"
 					+ "</p>" + "<h4>or<h4>");
 
 			rset = stmt.executeQuery("select userid, uname from users");
@@ -73,43 +74,45 @@ public class StartPage extends HttpServlet {
 			while (rset.next()) {
 				users.put(rset.getString("userid"), rset.getString("uname"));
 			}
+			out.println("</form>");
+			out.println("<form method = \"get\" action = \"http://localhost:9080/JDBCDemo/ReadParams\">");
 			out.println(" <select name=\"target_user\"> ");
 			for (Map.Entry<String, String> entry : users.entrySet()) {
 				out.println("  <option value=\" " + entry.getKey() + " \"> "
 						+ entry.getValue() + " </option> ");
 			}
 			out.println("</select></td><td>");
-			out.println("<INPUT TYPE=\"submit\" name=\"view_user\" VALUE=\"View user information\">");
+			out.println("<INPUT TYPE=\"submit\" name=\"manage_user\" VALUE=\"View user information\">");
 
 			out.println("</td></tr></table>");
 			out.println("</form>");
 
 			// template
-			Cookie[] cookies = null;
-			cookies = request.getCookies();
-			String uname = "", userid = "";
-			if (cookies != null) {
-				for (int i = 0; i < cookies.length; i++) {
-					Cookie cookie = cookies[i];
-					if (cookie.getName().equals("uname"))
-						uname = cookie.getValue();
-					if (cookie.getName().equals("userid"))
-						userid = cookie.getValue();
-				}
-			}
-//			out.println("<br/>"+uname+" / " +userid);
+//			Cookie[] cookies = null;
+//			cookies = request.getCookies();
+//			String uname = "", userid = "", authority = "";
+//			if (cookies != null) {
+//				for (int i = 0; i < cookies.length; i++) {
+//					Cookie cookie = cookies[i];
+//					if (cookie.getName().equals("uname"))
+//						uname = cookie.getValue();
+//					if (cookie.getName().equals("userid"))
+//						userid = cookie.getValue();
+//					if (cookie.getName().equals("authority"))
+//						authority = cookie.getValue();
+//				}
+//			}
+////			out.println("<br/>" + uname + " / " + userid + " / " + authority);
 			// template
 
-			
-			
 			// template
 			out.println("</center></body></html>");
 		} catch (SQLException e) {
 			out.println(e.getMessage());
-			out.println(1);
+			out.println("e1");
 		} catch (Exception e) {
 			out.println(e.getMessage());
-			out.println(2);
+			out.println("e2");
 		} finally {
 			try {
 				conn.close();
@@ -147,16 +150,20 @@ public class StartPage extends HttpServlet {
 				if (user_exist == 1) {
 					out.println("found user " + uname);
 					rset = stmt
-							.executeQuery("select userid from users where uname='"
+							.executeQuery("select userid, authority from users where uname='"
 									+ uname + "'");
 					if (rset.next()) {
 						String userid = rset.getString("userid");
 						Cookie c_uname = new Cookie("uname", uname);
 						Cookie c_userid = new Cookie("userid", userid);
+						Cookie c_authority = new Cookie("authority",
+								rset.getString("authority"));
 						c_uname.setMaxAge(60 * 60 * 24);
 						c_userid.setMaxAge(60 * 60 * 24);
+						c_authority.setMaxAge(60 * 60 * 24);
 						response.addCookie(c_uname);
 						response.addCookie(c_userid);
+						response.addCookie(c_authority);
 						String site = "StartPage";
 						response.setStatus(response.SC_MOVED_TEMPORARILY);
 						response.setHeader("Location", site);
@@ -174,10 +181,10 @@ public class StartPage extends HttpServlet {
 			out.println("</center></body></html>");
 		} catch (SQLException e) {
 			out.println(e.getMessage());
-			out.println(1);
+			out.println("e1");
 		} catch (Exception e) {
 			out.println(e.getMessage());
-			out.println(2);
+			out.println("e2");
 		} finally {
 			try {
 				conn.close();

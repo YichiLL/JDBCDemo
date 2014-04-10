@@ -109,4 +109,24 @@
     <servlet-name>StartPage</servlet-name>
     <url-pattern>/StartPage</url-pattern>
   </servlet-mapping>
+  <servlet>
+    <description></description>
+    <display-name>ProductPage</display-name>
+    <servlet-name>ProductPage</servlet-name>
+    <servlet-class>idb.Product</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>ProductPage</servlet-name>
+    <url-pattern>/ProductPage</url-pattern>
+  </servlet-mapping>
+  <servlet>
+    <description></description>
+    <display-name>ProductView</display-name>
+    <servlet-name>ProductView</servlet-name>
+    <servlet-class>idb.ProductView</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>ProductView</servlet-name>
+    <url-pattern>/ProductView</url-pattern>
+  </servlet-mapping>
 </web-app>
