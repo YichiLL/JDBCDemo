@@ -52,6 +52,7 @@ public class StartPage extends HttpServlet {
 			out.println("<h3>Customer: Choose a product to continue!</h3>");
 //			out.println(" <form method = \"get\" action = \"http://localhost:9080/JDBCDemo/ReadParams\"> ");
 			out.println(" <form method = \"get\" action = \"http://localhost:9080/JDBCDemo/ProductView\"> ");
+//			out.println(" <form method = \"post\" action = \"http://localhost:9080/JDBCDemo/ProductView\"> ");
 
 			out.println(" <select name=\"target_com\"> ");
 			for (Map.Entry<String, String> entry : coms.entrySet()) {
