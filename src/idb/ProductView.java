@@ -3,6 +3,7 @@ package idb;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Enumeration;
@@ -89,10 +90,52 @@ public class ProductView extends HttpServlet {
 			if (!target_com.equals("") & !product_mode.equals("")) {
 				if (product_mode.equals("view_product")) {
 
+					ResultSet rset = stmt
+							.executeQuery("select DISTINCT AC.barcode, AC.stock, AC.name, AC.category, SP.SALE_PRICE, W.LOCATION "
+									+ "from AVAIL_COM AC,SORDER_PLACEDBY SP,CONTAINS C,STORE_IN SI,WAREHOUSE W where AC.barcode="
+									+ target_com
+									+ " and  SP.OID=C.OID and SI.wid=W.wid and AC.BARCODE=C.BARCODE and AC.BARCODE=SI.BARCODE");
+					String name = "", category = "", sale_price = "", stock = "", location = "";
+					if (rset.next()) {
+						stock = rset.getString("stock");
+						name = rset.getString("name");
+						category = rset.getString("category");
+						sale_price = rset.getString("SALE_PRICE");
+						location = rset.getString("location");
+					}
+					out.println("<table dir=\"ltr\" width=\"800\" border=\"1\" class=\"default\">"
+							+ "<caption><h3>Product Information</h3></caption>	"
+							+ "<colgroup width=\"50%\"/>"
+							+ "	<colgroup id=\"colgroup\" class=\"colgroup\" align=\"center\" valign=\"middle\" title=\"title\" width=\"1*\" span=\"2\" style=\"\" />"
+							+ "	<thead>	<tr><th scope=\"col\"><font size=\"2\" color=\"grey\"> "
+							+ category
+							+ " -> &nbsp;</font>"
+							+ name
+							+ "</th><th scope=\"col\"><font size=\"2\" color=\"grey\">Price: </font><font color=\"#F25567\">&nbsp;$"
+							+ sale_price
+							+ "</font></th></tr><tr><th scope=\"col\"><font color=\"#38B060\">In Stock. <font color=\"#F25567\">"
+							+ stock
+							+ "</font> left.</font></th><th scope=\"col\"><font size=\"2\" color=\"grey\">Shipping from "
+							+ location
+							+ ".</font></th></tr><tr><th colspan=\"2\"><font size=\"3\"><em>Review from users</em></font></th></tr></thead>");
+					out.println("</table>");
+
+					rset = stmt
+							.executeQuery("select DISTINCT AC.BARCODE, WHR.REVIEW, WHR.rdate, U.UNAME "
+									+ "from AVAIL_COM AC,WR_HAS_REVIEW WHR,USERS U "
+									+ "where WHR.USERID = U.USERID and AC.BARCODE=WHR.BARCODE and AC.BARCODE="
+									+ target_com);
+					while (rset.next()) {
+						out.println(rset.getString("barcode") + " / "
+								+ rset.getString("uname") + " / "
+								+ rset.getDate("rdate") + "<br />"
+								+ rset.getString("review") + "<br />");
+					}
+
 				}
 				if (product_mode.equals("purchase_product")) {
 					if (authority.equals("1")) {
-
+						// TODO add purchase here
 					} else {
 						out.println("<a href=StartPage>Sorry, you do not have permission to access.<br>"
 								+ "Click to go back.</a>");
