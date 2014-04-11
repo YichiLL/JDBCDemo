@@ -23,7 +23,6 @@ public class Purchase extends HttpServlet {
 	private Connection conn;
 	private Statement stmt;
 
-
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse
 	 *      response)
@@ -43,23 +42,23 @@ public class Purchase extends HttpServlet {
 			out.println(tpl.getHeadline());
 			// template
 
-			// shanchu
-			Cookie cookie1 = null;
-			Cookie[] cookies1 = null;
-			cookies1 = request.getCookies();
-			if (cookies1 != null) {
-				for (int i = 0; i < cookies1.length; i++) {
-					cookie1 = cookies1[i];
-					out.println(cookie1.getName());
-					out.println("<br/>");
-					out.println(cookie1.getValue());
-					out.println("<br/>");
-				}
-			}
-			
+//			// shanchu
+//			Cookie cookie1 = null;
+//			Cookie[] cookies1 = null;
+//			cookies1 = request.getCookies();
+//			if (cookies1 != null) {
+//				for (int i = 0; i < cookies1.length; i++) {
+//					cookie1 = cookies1[i];
+//					out.println(cookie1.getName());
+//					out.println("<br/>");
+//					out.println(cookie1.getValue());
+//					out.println("<br/>");
+//				}
+//			}
+
 			Cookie[] cookies = null;
 			cookies = request.getCookies();
-			String uname = "", userid = "", authority = "",category="",target_com="";
+			String uname = "", userid = "", authority = "", category = "", target_com = "";
 			if (cookies != null) {
 				for (int i = 0; i < cookies.length; i++) {
 					Cookie cookie = cookies[i];
@@ -75,12 +74,25 @@ public class Purchase extends HttpServlet {
 						target_com = cookie.getValue();
 				}
 			}
-			
-			
-			
-			
-			
-			
+
+			ResultSet rset = stmt
+					.executeQuery("select distinct AC.CATEGORY, AC.NAME, S.SNAME, PP.PRICE, P.DAY, P.AMOUNT from PURCHASE P, PORDER_PROVIDEDBY PP, SUPPLIER S, AVAIL_COM AC where PP.PID=P.PID and AC.BARCODE=P.BARCODE and S.sid=PP.sid and ac.barcode="
+							+ target_com);
+			out.println("<table dir=\"ltr\" width=\"700\" border=\"1\" class=\"default\"><caption><h3>Purchase Order History</h3></caption><colgroup id=\"colgroup\" class=\"colgroup\" align=\"center\" valign=\"middle\" title=\"title\" width=\"1*\" span=\"2\" style=\"\" /><thead><tr><th scope=\"col\">Category</th><th scope=\"col\">Product</th><th scope=\"col\">Supplier</th><th scope=\"col\">Purchase Price</th><th scope=\"col\">Date</th><th scope=\"col\">Purchase Amount</th></tr></thead>");
+			out.println("<tbody>");
+			while (rset.next()) {
+				out.println("<tr>");
+				out.println("<td>" + rset.getString("CATEGORY") + "</td>");
+				out.println("<td>" + rset.getString("NAME") + "</td>");
+				out.println("<td>" + rset.getString("SNAME") + "</td>");
+				out.println("<td>$ " + rset.getString("PRICE") + "</td>");
+				out.println("<td>" + rset.getDate("DAY") + "</td>");
+				out.println("<td>" + rset.getString("AMOUNT") + "</td>");
+				out.println("</tr>");
+			}
+			;
+			out.println("</tbody></table>");
+
 			// template
 			out.println("<br/><br/><br/><a href=\"StartPage\">&lt;&lt;Go Back</a>&nbsp;&nbsp;<a href=\"Logout\">[ Log Out ]</a>");
 			out.println("</center></body></html>");

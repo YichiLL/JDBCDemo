@@ -33,7 +33,6 @@ public class ProductView extends HttpServlet {
 	private Connection conn;
 	private Statement stmt;
 
-
 	// template
 
 	/**
@@ -156,9 +155,16 @@ public class ProductView extends HttpServlet {
 					// out.println("<form method = \"post\" action = \"http://localhost:9080/JDBCDemo/ReadParams\">");
 					out.println("<h3>Write a review for this product</h3>");
 					out.println("<form method = \"post\" action = \"http://localhost:9080/JDBCDemo/ProductView\">");
-					out.println("<textarea name=\"review\" rows=5 cols=60>Please leave your review here.</textarea><br/>");
-					out.println("<br/><input type=\"submit\" name=\"submit_review\" value=\"Submit\">"
-							+ "<input type=\"hidden\" name=\"target_com\" value=\""
+					out.println("<textarea id=\"id_remarks\" name=\"review\" rows=5 cols=60>Please leave your review here.</textarea><br/>");
+					out.println("<br/><input type=\"submit\" name=\"submit_review\" value=\"Submit\" onclick=\"verify()\">");
+
+					out.println("<script>");
+					out.println("function verify(){");
+					out.println("if(!document.getElementById('id_remarks').value.trim().length){");
+					out.println("alert(\"Please enter the review\");return false;}}");
+					out.println("</script>");
+
+					out.println("<input type=\"hidden\" name=\"target_com\" value=\""
 							+ target_com
 							+ "\"><input type=\"hidden\" name=\"view_product\" value=\"redirect\"><input type=\"hidden\" name=\"userid\" value=\""
 							+ userid + "\">" + "</form><br/><br/>");
@@ -197,15 +203,15 @@ public class ProductView extends HttpServlet {
 				}
 				if (product_mode.equals("purchase_product")) {
 					if (authority.equals("1")) {
-						
+
 						Cookie c_barcode = new Cookie("target_com", target_com);
 						c_barcode.setMaxAge(60 * 60 * 24);
 						response.addCookie(c_barcode);
-						
+
 						String site = "Purchase";
 						response.setStatus(response.SC_MOVED_TEMPORARILY);
 						response.setHeader("Location", site);
-						
+
 					} else {
 						out.println("<a href=StartPage>Sorry, you do not have permission to access.<br>"
 								+ "Click to go back.</a>");
@@ -220,8 +226,8 @@ public class ProductView extends HttpServlet {
 			out.println("<br/><br/><br/><a href=\"StartPage\">&lt;&lt;Go Back</a>&nbsp;&nbsp;<a href=\"Logout\">[ Log Out ]</a>");
 			out.println("</center></body></html>");
 		} catch (SQLException e) {
-			out.println(e.getMessage());
-			out.println("e1");
+			out.println("<br/><br/><a href=\"StartPage\">&lt;&lt;Go Back</a>&nbsp;&nbsp;<a href=\"Logout\">[ Log Out ]</a>");
+			out.println("<br/>Thanks.");
 		} catch (Exception e) {
 			out.println(e.getMessage());
 			out.println("e2");
@@ -255,6 +261,7 @@ public class ProductView extends HttpServlet {
 			out.println(tpl.getHead());
 			out.println(tpl.getHeadline());
 			// template
+			int flag = 0;
 
 			// get mode and form data
 			String target_com = "", product_mode = "", userid = "", review = "";
@@ -286,9 +293,7 @@ public class ProductView extends HttpServlet {
 					String[] paramValues = request.getParameterValues("amount");
 					String paramValue = paramValues[0];
 					if (paramValue.length() == 0) {
-						String site = "ProductView";
-						response.setStatus(response.SC_MOVED_TEMPORARILY);
-						response.setHeader("Location", site);
+						flag=2;
 					} else
 						amount = Integer.parseInt(paramValue);
 				}
@@ -333,16 +338,18 @@ public class ProductView extends HttpServlet {
 					// + " / " + sale_price + " / " + userid+ " / " + rdate+
 					// " / " + max_oid+" / "+stock);
 
-					rset = stmt.executeQuery("update avail_com set stock="
-							+ Integer.toString(stock - amount)
-							+ " where barcode=" + target_com);
+					if (stock - amount >= 0) {
+						rset = stmt.executeQuery("update avail_com set stock="
+								+ Integer.toString(stock - amount)
+								+ " where barcode=" + target_com);
+					} else {
+						out.println("<script>alert(\"Sorry, it seems like we don't have that many in stock.\")</script>");
+						flag=1;
+					}
+				} else if (product_mode.equals("submit_purchase")) {
 
-				} 
-				
-				else if (product_mode.equals("submit_purchase")) {		
-					
-					//Not used any more
-					
+					// Not used any more
+
 				} else {
 					out.println("<a href=StartPage>Sorry, you do not have permission to access.<br>"
 							+ "Click to go back.</a>");
@@ -355,14 +362,20 @@ public class ProductView extends HttpServlet {
 			}
 
 			// close this when debugging
-			this.doGet(request, response);
+			if (flag == 0) {
+				this.doGet(request, response);
+			} else if (flag==2){out.println("<script>alert(\"Please enter a number.\")</script>");
+			out.println("<br/><br/><a href=\"StartPage\">&lt;&lt;Go Back</a>&nbsp;&nbsp;<a href=\"Logout\">[ Log Out ]</a>");} 
+			else {
+				out.println("Please choose again.");
+			}
 
 			// template
 			out.println("<br/><br/><br/><a href=\"StartPage\">&lt;&lt;Go Back</a>&nbsp;&nbsp;<a href=\"Logout\">[ Log Out ]</a>");
 			out.println("</center></body></html>");
 		} catch (SQLException e) {
-			out.println(e.getMessage());
-			out.println("e1");
+			out.println("<br/>Please enter a valid review.");
+			out.println("<br/><br/><a href=\"StartPage\">&lt;&lt;Go Back</a>&nbsp;&nbsp;<a href=\"Logout\">[ Log Out ]</a>");
 		} catch (Exception e) {
 			out.println(e.getMessage());
 			out.println("e2");
