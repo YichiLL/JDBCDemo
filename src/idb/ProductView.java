@@ -390,4 +390,5 @@ public class ProductView extends HttpServlet {
 		out.close();
 		// template
 	}
+	
 }
