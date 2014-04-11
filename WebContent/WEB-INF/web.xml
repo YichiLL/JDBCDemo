@@ -129,4 +129,34 @@
     <servlet-name>ProductView</servlet-name>
     <url-pattern>/ProductView</url-pattern>
   </servlet-mapping>
+  <servlet>
+    <description></description>
+    <display-name>Logout</display-name>
+    <servlet-name>Logout</servlet-name>
+    <servlet-class>idb.Logout</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>Logout</servlet-name>
+    <url-pattern>/Logout</url-pattern>
+  </servlet-mapping>
+  <servlet>
+    <description></description>
+    <display-name>ChooseCategory</display-name>
+    <servlet-name>ChooseCategory</servlet-name>
+    <servlet-class>idb.ChooseCategory</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>ChooseCategory</servlet-name>
+    <url-pattern>/ChooseCategory</url-pattern>
+  </servlet-mapping>
+  <servlet>
+    <description></description>
+    <display-name>Purchase</display-name>
+    <servlet-name>Purchase</servlet-name>
+    <servlet-class>idb.Purchase</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>Purchase</servlet-name>
+    <url-pattern>/Purchase</url-pattern>
+  </servlet-mapping>
 </web-app>

@@ -9,13 +9,18 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import com.sun.org.apache.bcel.internal.generic.SALOAD;
 
 import oracle.jdbc.pool.OracleDataSource;
 
@@ -26,6 +31,8 @@ public class ProductView extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	// template
 	private Connection conn;
+	private Statement stmt;
+
 
 	// template
 
@@ -51,7 +58,7 @@ public class ProductView extends HttpServlet {
 			this.conn = c.getConnection();
 			HtmlTemplate tpl = new HtmlTemplate("OnlineStore - View Product",
 					"Online Store");
-			Statement stmt = conn.createStatement();
+			this.stmt = conn.createStatement();
 			response.setContentType("text/html");
 			out.println(tpl.getHead());
 			out.println(tpl.getHeadline());
@@ -147,18 +154,58 @@ public class ProductView extends HttpServlet {
 					out.println("</tbody></table><br/><br/>");
 
 					// out.println("<form method = \"post\" action = \"http://localhost:9080/JDBCDemo/ReadParams\">");
+					out.println("<h3>Write a review for this product</h3>");
 					out.println("<form method = \"post\" action = \"http://localhost:9080/JDBCDemo/ProductView\">");
 					out.println("<textarea name=\"review\" rows=5 cols=60>Please leave your review here.</textarea><br/>");
-					out.println("<INPUT TYPE=\"submit\" name=\"submit_review\" VALUE=\"Submit\">"
+					out.println("<br/><input type=\"submit\" name=\"submit_review\" value=\"Submit\">"
 							+ "<input type=\"hidden\" name=\"target_com\" value=\""
 							+ target_com
 							+ "\"><input type=\"hidden\" name=\"view_product\" value=\"redirect\"><input type=\"hidden\" name=\"userid\" value=\""
-							+ userid + "\">" + "</form>");
+							+ userid + "\">" + "</form><br/><br/>");
+
+					// buying products
+					rset = stmt
+							.executeQuery("select DISTINCT PAYMENTMETHOD from SORDER_PLACEDBY");
+					ArrayList<String> paymentmethods = new ArrayList<String>();
+					while (rset.next()) {
+						paymentmethods.add(rset.getString("paymentmethod"));
+					}
+					out.println("<h3>Please specify order information</h3>");
+					// out.println(" <form method = \"get\" action = \"http://localhost:9080/JDBCDemo/ReadParams\"> ");
+					out.println(" <form method = \"post\" action = \"http://localhost:9080/JDBCDemo/ProductView\"> ");
+
+					out.println("Quantity : <input type=\"number\" name=\"amount\" min=\"1\" max=\"100\">");
+					out.println("&nbsp;&nbsp;Payment method : <select name=\"payment\"> ");
+					for (String payment : paymentmethods) {
+						out.println("  <option value=\" " + payment + " \"> "
+								+ payment + " </option> ");
+					}
+					out.println("</select><br/><br/>");
+					out.println("<input type=\"submit\" name=\"submit_order\" value=\"Place Order\">");
+					out.println("<input type=\"hidden\" name=\"target_com\" value=\""
+							+ target_com
+							+ "\"><input type=\"hidden\" name=\"view_product\" value=\"redirect\"><input type=\"hidden\" name=\"userid\" value=\""
+							+ userid
+							+ "\">"
+							+ "<input type=\"hidden\" name=\"sale_price\" value=\""
+							+ sale_price
+							+ "\">"
+							+ "<input type=\"hidden\" name=\"stock\" value=\""
+							+ stock + "\">");
+					out.println("</form>");
 
 				}
 				if (product_mode.equals("purchase_product")) {
 					if (authority.equals("1")) {
-						// TODO add purchase here
+						
+						Cookie c_barcode = new Cookie("target_com", target_com);
+						c_barcode.setMaxAge(60 * 60 * 24);
+						response.addCookie(c_barcode);
+						
+						String site = "Purchase";
+						response.setStatus(response.SC_MOVED_TEMPORARILY);
+						response.setHeader("Location", site);
+						
 					} else {
 						out.println("<a href=StartPage>Sorry, you do not have permission to access.<br>"
 								+ "Click to go back.</a>");
@@ -170,6 +217,7 @@ public class ProductView extends HttpServlet {
 			}
 
 			// template
+			out.println("<br/><br/><br/><a href=\"StartPage\">&lt;&lt;Go Back</a>&nbsp;&nbsp;<a href=\"Logout\">[ Log Out ]</a>");
 			out.println("</center></body></html>");
 		} catch (SQLException e) {
 			out.println(e.getMessage());
@@ -180,6 +228,7 @@ public class ProductView extends HttpServlet {
 		} finally {
 			try {
 				conn.close();
+				stmt.close();
 			} catch (Exception e) {
 				out.println(e.getMessage());
 			}
@@ -201,7 +250,7 @@ public class ProductView extends HttpServlet {
 			this.conn = c.getConnection();
 			HtmlTemplate tpl = new HtmlTemplate("OnlineStore - Write Review",
 					"Online Store");
-			Statement stmt = conn.createStatement();
+			this.stmt = conn.createStatement();
 			response.setContentType("text/html");
 			out.println(tpl.getHead());
 			out.println(tpl.getHeadline());
@@ -209,6 +258,8 @@ public class ProductView extends HttpServlet {
 
 			// get mode and form data
 			String target_com = "", product_mode = "", userid = "", review = "";
+			String payment = "", sale_price = "";
+			int amount = 0, stock = 0;
 			Enumeration paramNames = request.getParameterNames();
 			while (paramNames.hasMoreElements()) {
 				String paramName = (String) paramNames.nextElement();
@@ -224,6 +275,23 @@ public class ProductView extends HttpServlet {
 					product_mode = "submit_order";
 				if (paramName.equals("submit_purchase"))
 					product_mode = "submit_purchase";
+				if (paramName.equals("sale_price"))
+					sale_price = request.getParameter("sale_price");
+				if (paramName.equals("payment"))
+					payment = request.getParameter("payment");
+				if (paramName.equals("stock"))
+					stock = Integer.parseInt(request.getParameter("stock"));
+
+				if (product_mode.equals("submit_order")) {
+					String[] paramValues = request.getParameterValues("amount");
+					String paramValue = paramValues[0];
+					if (paramValue.length() == 0) {
+						String site = "ProductView";
+						response.setStatus(response.SC_MOVED_TEMPORARILY);
+						response.setHeader("Location", site);
+					} else
+						amount = Integer.parseInt(paramValue);
+				}
 			}
 
 			if (!target_com.equals("") & !product_mode.equals("")) {
@@ -235,8 +303,9 @@ public class ProductView extends HttpServlet {
 						max_rid = rset.getInt("max_rid");
 					}
 					java.util.Date today = new java.util.Date();
-					SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd-MMM-yy");
-			        String rdate = DATE_FORMAT.format(today);
+					SimpleDateFormat DATE_FORMAT = new SimpleDateFormat(
+							"dd-MMM-yy");
+					String rdate = DATE_FORMAT.format(today);
 					PreparedStatement p = conn
 							.prepareStatement("INSERT INTO WR_HAS_REVIEW (RID,RDATE,REVIEW,BARCODE,USERID) VALUES (?,?,?,?,?)");
 					p.setInt(1, max_rid + 1);
@@ -249,8 +318,31 @@ public class ProductView extends HttpServlet {
 
 				else if (product_mode.equals("submit_order")) {
 
-				} else if (product_mode.equals("submit_purchase")) {
+					ResultSet rset = stmt
+							.executeQuery("select max(oid) as max_oid from sorder_placedby");
+					int max_oid = -2;
+					if (rset.next()) {
+						max_oid = rset.getInt("max_oid");
+					}
+					java.util.Date today = new java.util.Date();
+					SimpleDateFormat DATE_FORMAT = new SimpleDateFormat(
+							"dd-MMM-yy");
+					String rdate = DATE_FORMAT.format(today);
 
+					// out.println(amount + " / " + target_com + " / " + payment
+					// + " / " + sale_price + " / " + userid+ " / " + rdate+
+					// " / " + max_oid+" / "+stock);
+
+					rset = stmt.executeQuery("update avail_com set stock="
+							+ Integer.toString(stock - amount)
+							+ " where barcode=" + target_com);
+
+				} 
+				
+				else if (product_mode.equals("submit_purchase")) {		
+					
+					//Not used any more
+					
 				} else {
 					out.println("<a href=StartPage>Sorry, you do not have permission to access.<br>"
 							+ "Click to go back.</a>");
@@ -258,12 +350,15 @@ public class ProductView extends HttpServlet {
 			}
 
 			else {
-				out.println("<a href=StartPage>Please select a product.<br>"
+				out.println("<a href=StartPage>Please make a selection.<br>"
 						+ "Click to go back.</a>");
 			}
 
-			 this.doGet(request, response);
+			// close this when debugging
+			this.doGet(request, response);
+
 			// template
+			out.println("<br/><br/><br/><a href=\"StartPage\">&lt;&lt;Go Back</a>&nbsp;&nbsp;<a href=\"Logout\">[ Log Out ]</a>");
 			out.println("</center></body></html>");
 		} catch (SQLException e) {
 			out.println(e.getMessage());
@@ -274,6 +369,7 @@ public class ProductView extends HttpServlet {
 		} finally {
 			try {
 				conn.close();
+				stmt.close();
 			} catch (Exception e) {
 				out.println(e.getMessage());
 			}
@@ -281,5 +377,4 @@ public class ProductView extends HttpServlet {
 		out.close();
 		// template
 	}
-
 }

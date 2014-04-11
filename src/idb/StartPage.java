@@ -6,6 +6,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -21,6 +22,7 @@ public class StartPage extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	// template
 	private Connection conn;
+	private Statement stmt;
 
 	// template
 
@@ -37,22 +39,60 @@ public class StartPage extends HttpServlet {
 			DB_Conn c = new DB_Conn();
 			this.conn = c.getConnection();
 			HtmlTemplate tpl = new HtmlTemplate("OnlineStore - Start Page",
-					"Welcome!");
-			Statement stmt = conn.createStatement();
+					"Choose a Product to See More");
+			this.stmt = conn.createStatement();
 			response.setContentType("text/html");
 			out.println(tpl.getHead());
 			out.println(tpl.getHeadline());
 			// template
 
-			ResultSet rset = stmt.executeQuery("select * from avail_com");
+			// // 2B shanchu
+			// Cookie cookie1 = null;
+			// Cookie[] cookies1 = null;
+			// // Get an array of Cookies associated with this domain
+			// cookies1 = request.getCookies();
+			// if (cookies1 != null) {
+			// for (int i = 0; i < cookies1.length; i++) {
+			// cookie1 = cookies1[i];
+			// out.println(cookie1.getName());
+			// out.println("<br/>");
+			// out.println(cookie1.getValue());
+			// out.println("<br/>");
+			// }
+			// }
+
+			Cookie[] cookies = null;
+			cookies = request.getCookies();
+			String uname = "", userid = "", authority = "", category = "";
+			if (cookies != null) {
+				for (int i = 0; i < cookies.length; i++) {
+					Cookie cookie = cookies[i];
+					if (cookie.getName().equals("uname"))
+						uname = cookie.getValue();
+					if (cookie.getName().equals("userid"))
+						userid = cookie.getValue();
+					if (cookie.getName().equals("authority"))
+						authority = cookie.getValue();
+					if (cookie.getName().equals("category"))
+						category = cookie.getValue();
+				}
+			}
+
+			ResultSet rset = stmt
+					.executeQuery("select * from avail_com where category='"
+							+ category + "'");
 			Map<String, String> coms = new HashMap<String, String>();
 			while (rset.next()) {
 				coms.put(rset.getString("barcode"), rset.getString("name"));
+				// out.println("get "+rset.getString("barcode")+
+				// rset.getString("name"));
 			}
+			
+			out.println("<h2>Hi, " + uname + "!</h2>");
 			out.println("<h3>Customer: Choose a product to continue!</h3>");
-//			out.println(" <form method = \"get\" action = \"http://localhost:9080/JDBCDemo/ReadParams\"> ");
+			// out.println(" <form method = \"get\" action = \"http://localhost:9080/JDBCDemo/ReadParams\"> ");
 			out.println(" <form method = \"get\" action = \"http://localhost:9080/JDBCDemo/ProductView\"> ");
-//			out.println(" <form method = \"post\" action = \"http://localhost:9080/JDBCDemo/ProductView\"> ");
+			// out.println(" <form method = \"post\" action = \"http://localhost:9080/JDBCDemo/ProductView\"> ");
 
 			out.println(" <select name=\"target_com\"> ");
 			for (Map.Entry<String, String> entry : coms.entrySet()) {
@@ -68,45 +108,33 @@ public class StartPage extends HttpServlet {
 			out.println("</br><h3>Manager:</h3>"
 					+ "<p>Choose from above and</p><p>"
 					+ "<INPUT TYPE=\"submit\" name=\"purchase_product\" VALUE=\"Purchase from Providers\">"
-					+ "</p>" + "<h4>or<h4>");
+					+ "</p>");
+			
+			 out.println("</form>");
 
-			rset = stmt.executeQuery("select userid, uname from users");
-			Map<String, String> users = new HashMap<String, String>();
-			while (rset.next()) {
-				users.put(rset.getString("userid"), rset.getString("uname"));
-			}
-			out.println("</form>");
-			out.println("<form method = \"get\" action = \"http://localhost:9080/JDBCDemo/ReadParams\">");
-			out.println(" <select name=\"target_user\"> ");
-			for (Map.Entry<String, String> entry : users.entrySet()) {
-				out.println("  <option value=\" " + entry.getKey() + " \"> "
-						+ entry.getValue() + " </option> ");
-			}
-			out.println("</select></td><td>");
-			out.println("<INPUT TYPE=\"submit\" name=\"manage_user\" VALUE=\"View user information\">");
 
-			out.println("</td></tr></table>");
-			out.println("</form>");
-
-			// template
-//			Cookie[] cookies = null;
-//			cookies = request.getCookies();
-//			String uname = "", userid = "", authority = "";
-//			if (cookies != null) {
-//				for (int i = 0; i < cookies.length; i++) {
-//					Cookie cookie = cookies[i];
-//					if (cookie.getName().equals("uname"))
-//						uname = cookie.getValue();
-//					if (cookie.getName().equals("userid"))
-//						userid = cookie.getValue();
-//					if (cookie.getName().equals("authority"))
-//						authority = cookie.getValue();
-//				}
-//			}
-////			out.println("<br/>" + uname + " / " + userid + " / " + authority);
-			// template
+			// not implemented now
+			// out.println("<h4>or<h4>");
+			// rset = stmt.executeQuery("select userid, uname from users");
+			// Map<String, String> users = new HashMap<String, String>();
+			// while (rset.next()) {
+			// users.put(rset.getString("userid"), rset.getString("uname"));
+			// }
+			// out.println("</form>");
+			// out.println("<form method = \"get\" action = \"http://localhost:9080/JDBCDemo/ReadParams\">");
+			// out.println("<select name=\"target_user\"> ");
+			// for (Map.Entry<String, String> entry : users.entrySet()) {
+			// out.println("  <option value=\" " + entry.getKey() + " \"> "
+			// + entry.getValue() + " </option> ");
+			// }
+			// out.println("</select></td><td>");
+			// out.println("<INPUT TYPE=\"submit\" name=\"manage_user\" VALUE=\"View user information\">");
+			//
+			// out.println("</td></tr></table>");
+			// out.println("</form>");
 
 			// template
+			out.println("<br/><br/><br/><a href=\"ChooseCategory\">&lt;&lt;Go Back</a>&nbsp;&nbsp;<a href=\"Logout\">[ Log Out ]</a>");
 			out.println("</center></body></html>");
 		} catch (SQLException e) {
 			out.println(e.getMessage());
@@ -117,6 +145,7 @@ public class StartPage extends HttpServlet {
 		} finally {
 			try {
 				conn.close();
+				stmt.close();
 			} catch (Exception e) {
 				out.println(e.getMessage());
 			}
@@ -127,58 +156,36 @@ public class StartPage extends HttpServlet {
 
 	protected void doPost(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
-
-		// template
 		PrintWriter out = new PrintWriter(response.getOutputStream());
 		try {
 			DB_Conn c = new DB_Conn();
 			this.conn = c.getConnection();
-			HtmlTemplate tpl = new HtmlTemplate("OnlineStore - Start Page",
+			HtmlTemplate tpl = new HtmlTemplate("OnlineStore - Choose Start",
 					"Welcome!");
-			Statement stmt = conn.createStatement();
+			this.stmt = conn.createStatement();
 			response.setContentType("text/html");
 			out.println(tpl.getHead());
 			out.println(tpl.getHeadline());
 			// template
 
-			String uname = request.getParameter("uname");
-			ResultSet rset = stmt
-					.executeQuery("select count(*) as user_exist from users where uname='"
-							+ uname + "'");
-
-			if (rset.next()) {
-				int user_exist = Integer.parseInt(rset.getString("user_exist"));
-				if (user_exist == 1) {
-					out.println("found user " + uname);
-					rset = stmt
-							.executeQuery("select userid, authority from users where uname='"
-									+ uname + "'");
-					if (rset.next()) {
-						String userid = rset.getString("userid");
-						Cookie c_uname = new Cookie("uname", uname);
-						Cookie c_userid = new Cookie("userid", userid);
-						Cookie c_authority = new Cookie("authority",
-								rset.getString("authority"));
-						c_uname.setMaxAge(60 * 60 * 24);
-						c_userid.setMaxAge(60 * 60 * 24);
-						c_authority.setMaxAge(60 * 60 * 24);
-						response.addCookie(c_uname);
-						response.addCookie(c_userid);
-						response.addCookie(c_authority);
-						String site = "StartPage";
-						response.setStatus(response.SC_MOVED_TEMPORARILY);
-						response.setHeader("Location", site);
-					} else {
-						out.println("<a href=login.html>Database connection error.</a>");
-					}
-
-				} else {
-					out.println("<a href=login.html>Username does not exist. (Case sensitive.)<br>"
-							+ "Click to go back.</a>");
+			String category;
+			Enumeration paramNames = request.getParameterNames();
+			while (paramNames.hasMoreElements()) {
+				String paramName = (String) paramNames.nextElement();
+				if (paramName.equals("category")) {
+					category = request.getParameter("category");
+					Cookie c_category = new Cookie("category", category.trim());
+					c_category.setMaxAge(60 * 60 * 24);
+					response.addCookie(c_category);
 				}
 			}
 
+			String site = "StartPage";
+			response.setStatus(response.SC_MOVED_TEMPORARILY);
+			response.setHeader("Location", site);
+
 			// template
+			out.println("<br/><br/><br/><a href=\"ChooseCategory\">&lt;&lt;Go Back</a>&nbsp;&nbsp;<a href=\"Logout\">[ Log Out ]</a>");
 			out.println("</center></body></html>");
 		} catch (SQLException e) {
 			out.println(e.getMessage());
@@ -189,6 +196,7 @@ public class StartPage extends HttpServlet {
 		} finally {
 			try {
 				conn.close();
+				stmt.close();
 			} catch (Exception e) {
 				out.println(e.getMessage());
 			}
