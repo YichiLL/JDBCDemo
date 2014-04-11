@@ -1,4 +1,4 @@
 JDBCDemo
 ========
 
-Demo project of jdbc
+Demo project of Oracle JDBC, and Java servlet.
